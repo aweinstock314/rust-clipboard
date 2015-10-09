@@ -233,10 +233,12 @@ impl ClipboardContextSetter {
             return Err(err("XExtendedMaxRequestSize/XMaxRequestSize"));
         }
 
+        /* TODO: Do this in the background process when forking a separate process is implemneted.
         // chdir to / in case the directory of the program is removed/unmounted
         if let Err(_) = set_current_dir(Path::new("/")) {
             return Err(err("set_current_dir"));
         }
+        */
 
         Ok(ClipboardContextSetter {
             display: dpy,
