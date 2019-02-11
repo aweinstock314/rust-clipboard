@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-use std::error::Error;
+use error::ClipboardError;
 use std::time::Duration;
 use std::marker::PhantomData;
 use common::*;
@@ -50,11 +50,11 @@ impl<S> ClipboardProvider for X11ClipboardContext<S>
 where
     S: Selection,
 {
-    fn new() -> Result<X11ClipboardContext<S>, Box<Error>> {
+    fn new() -> Result<X11ClipboardContext<S>, ClipboardError> {
         Ok(X11ClipboardContext(X11Clipboard::new()?, PhantomData))
     }
 
-    fn get_contents(&mut self) -> Result<String, Box<Error>> {
+    fn get_contents(&mut self) -> Result<String, ClipboardError> {
         Ok(String::from_utf8(self.0.load(
             S::atom(&self.0.getter.atoms),
             self.0.getter.atoms.utf8_string,
@@ -63,7 +63,7 @@ where
         )?)?)
     }
 
-    fn set_contents(&mut self, data: String) -> Result<(), Box<Error>> {
+    fn set_contents(&mut self, data: String) -> Result<(), ClipboardError> {
         Ok(self.0.store(
             S::atom(&self.0.setter.atoms),
             self.0.setter.atoms.utf8_string,

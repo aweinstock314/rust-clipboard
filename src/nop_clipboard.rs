@@ -15,22 +15,22 @@ limitations under the License.
 */
 
 use common::ClipboardProvider;
-use std::error::Error;
+use error::ClipboardError;
 
 pub struct NopClipboardContext;
 
 impl ClipboardProvider for NopClipboardContext {
-    fn new() -> Result<NopClipboardContext, Box<Error>> {
+    fn new() -> Result<NopClipboardContext, ClipboardError> {
         Ok(NopClipboardContext)
     }
-    fn get_contents(&mut self) -> Result<String, Box<Error>> {
+    fn get_contents(&mut self) -> Result<String, ClipboardError> {
         println!("Attempting to get the contents of the clipboard, which hasn't yet been \
                   implemented on this platform.");
-        Ok("".to_string())
+        Err(ClipboardError::Unimplemented)
     }
-    fn set_contents(&mut self, _: String) -> Result<(), Box<Error>> {
+    fn set_contents(&mut self, _: String) -> Result<(), ClipboardError> {
         println!("Attempting to set the contents of the clipboard, which hasn't yet been \
                   implemented on this platform.");
-        Ok(())
+        Err(ClipboardError::Unimplemented)
     }
 }
