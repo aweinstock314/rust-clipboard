@@ -20,6 +20,9 @@ limitations under the License.
 #![crate_type = "rlib"]
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+extern crate wayland_client;
+
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 extern crate x11_clipboard as x11_clipboard_crate;
 
 #[cfg(windows)]
@@ -35,6 +38,9 @@ extern crate objc_foundation;
 
 mod common;
 pub use common::ClipboardProvider;
+
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+pub mod wayland_clipboard;
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 pub mod x11_clipboard;
