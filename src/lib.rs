@@ -21,6 +21,10 @@ limitations under the License.
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 extern crate x11_clipboard as x11_clipboard_crate;
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+extern crate smithay_clipboard;
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+extern crate wayland_client;
 
 #[cfg(windows)]
 extern crate clipboard_win;
@@ -38,6 +42,8 @@ pub use common::ClipboardProvider;
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 pub mod x11_clipboard;
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+pub mod wayland_clipboard;
 
 #[cfg(windows)]
 pub mod windows_clipboard;
