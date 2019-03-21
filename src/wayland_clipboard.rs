@@ -25,11 +25,36 @@ use wl_clipboard_rs::{
     paste, ClipboardType,
 };
 
+/// Interface to the clipboard for Wayland windowing systems.
+///
+/// Other users of the Wayland clipboard will only see the contents
+/// copied to the clipboard so long as the process copying to the
+/// clipboard exists. If you need the contents of the clipboard to
+/// remain after your application shuts down, consider daemonizing the
+/// clipboard components of your application.
+///
+/// `WaylandClipboardContext` automatically detects support for and
+/// uses the primary selection protocol.
+///
+/// # Example
+///
+/// ```
+/// let mut clipboard = WaylandClipboardContext::new().unwrap();
+/// let previous_contents = clipboard.get_contents().unwrap();
+/// clipboard.set_contents("foo bar baz".to_string()).unwrap();
+/// ```
 pub struct WaylandClipboardContext {
     supports_primary_selection: bool,
 }
 
 impl ClipboardProvider for WaylandClipboardContext {
+    /// Constructs a new `WaylandClipboardContext`.
+    ///
+    /// Attempts to get the current contents of the primary selection,
+    /// returning `Err` if the contents of the clipboard could not be
+    /// fetched. An empty clipboard is not considered an error, nor is
+    /// the Wayland environment not supporting the primary selection
+    /// protocol.
     fn new() -> Result<WaylandClipboardContext, Box<dyn Error>> {
         if let Err(e) = paste::get_contents(
             ClipboardType::Primary,
@@ -37,7 +62,9 @@ impl ClipboardProvider for WaylandClipboardContext {
             paste::MimeType::Any,
         ) {
             match e {
-                paste::Error::NoSeats | paste::Error::ClipboardEmpty | paste::Error::NoMimeType => {
+                paste::Error::NoSeats
+                | paste::Error::ClipboardEmpty
+                | paste::Error::NoMimeType => {
                     Ok(WaylandClipboardContext {
                         supports_primary_selection: true,
                     })
@@ -54,29 +81,61 @@ impl ClipboardProvider for WaylandClipboardContext {
         }
     }
 
+    /// Pastes from the Wayland clipboard.
+    ///
+    /// If the Wayland environment supported the primary selection when
+    /// this context was constructed, first checks the primary
+    /// selection. If pasting from the primary selection raises an
+    /// error or the primary selection is unsupported, falls back to
+    /// the regular clipboard.
+    ///
+    /// An empty clipboard is not considered an error, but the
+    /// clipboard must indicate a text MIME type and the contained text
+    /// must be valid UTF-8.
     fn get_contents(&mut self) -> Result<String, Box<dyn Error>> {
         if self.supports_primary_selection {
-            if let Ok((mut reader, _)) = paste::get_contents(
+            match paste::get_contents(
                 ClipboardType::Primary,
                 paste::Seat::Unspecified,
                 paste::MimeType::Text,
             ) {
-                // strange, but rustc won't convert Box<io::Error> into Box<dyn Error> implicitly
-                return Ok(read_into_string(&mut reader).map_err(Box::new)?);
+                Ok((mut reader, _)) => {
+                    // this looks weird, but rustc won't let me do it
+                    // the natural way
+                    return Ok(read_into_string(&mut reader).map_err(Box::new)?);
+                }
+                Err(e) => match e {
+                    paste::Error::NoSeats
+                    | paste::Error::ClipboardEmpty
+                    | paste::Error::NoMimeType => return Ok("".to_string()),
+                    _ => (),
+                }
             }
         }
 
-        let mut reader = paste::get_contents(
+        let mut reader = match paste::get_contents(
             ClipboardType::Regular,
             paste::Seat::Unspecified,
             paste::MimeType::Text,
-        )
-        .map_err(into_boxed_error)?
-        .0;
+        ) {
+            Ok((reader, _)) => reader,
+            Err(e) => match e {
+                paste::Error::NoSeats
+                | paste::Error::ClipboardEmpty
+                | paste::Error::NoMimeType => return Ok("".to_string()),
+                _ => return Err(into_boxed_error(e)),
+            }
+        };
 
         Ok(read_into_string(&mut reader).map_err(Box::new)?)
     }
 
+    /// Copies to the Wayland clipboard.
+    ///
+    /// If the Wayland environment supported the primary selection when
+    /// this context was constructed, this will copy to both the
+    /// primary selection and the regular clipboard. Otherwise, only
+    /// the regular clipboard will be pasted to.
     fn set_contents(&mut self, data: String) -> Result<(), Box<dyn Error>> {
         let mut options = Options::new();
 
