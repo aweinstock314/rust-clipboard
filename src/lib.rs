@@ -20,7 +20,10 @@ limitations under the License.
 #![crate_type = "rlib"]
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
-extern crate wayland_client;
+extern crate failure;
+
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+extern crate wl_clipboard_rs;
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 extern crate x11_clipboard as x11_clipboard_crate;

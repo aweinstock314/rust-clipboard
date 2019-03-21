@@ -16,5 +16,6 @@ objc_id = "0.1"
 objc-foundation = "0.1"
 
 [target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))'.dependencies]
-wayland-client = { version = "0.23", features = ["native_lib", "dlopen"] }
+failure = "0.1"
+wl-clipboard-rs = "0.2"
 x11-clipboard = "0.3"
