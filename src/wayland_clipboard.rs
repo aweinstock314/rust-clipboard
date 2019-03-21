@@ -125,8 +125,6 @@ mod tests {
             .set_contents("foo bar baz".to_string())
             .expect("couldn't set contents of Wayland clipboard");
 
-        std::thread::sleep(std::time::Duration::from_secs(5));
-
         assert_eq!(
             clipboard
                 .get_contents()
