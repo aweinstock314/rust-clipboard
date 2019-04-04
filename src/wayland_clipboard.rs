@@ -16,13 +16,15 @@ limitations under the License.
 
 use common::*;
 use failure::Fail;
+use smithay_clipboard::WaylandClipboard;
 use std::{
     error::Error,
     io::{self, Read},
 };
+use wayland_client::Display;
 use wl_clipboard_rs::{
     copy::{self, Options, ServeRequests},
-    paste, ClipboardType,
+    paste, utils,
 };
 
 /// Interface to the clipboard for Wayland windowing systems.
@@ -44,41 +46,44 @@ use wl_clipboard_rs::{
 /// clipboard.set_contents("foo bar baz".to_string()).unwrap();
 /// ```
 pub struct WaylandClipboardContext {
-    supports_primary_selection: bool,
+    inner: Inner,
+}
+
+impl WaylandClipboardContext {
+    /// Constructs a `WaylandClipboardContext` that operates on the
+    /// given seat using the regular Wayland clipboard protocol.
+    ///
+    /// Returns Err if unable to connect to a Wayland server.
+    pub fn with_seat(seat_name: String) -> Result<WaylandClipboardContext, Box<dyn Error>> {
+        let display = Display::connect_to_env()?.0;
+        let clipboard = WaylandClipboard::new_threaded(&display);
+        let inner = Inner::WithSeat {
+            clipboard,
+            seat_name,
+        };
+
+        Ok(WaylandClipboardContext { inner })
+    }
 }
 
 impl ClipboardProvider for WaylandClipboardContext {
-    /// Constructs a new `WaylandClipboardContext`.
+    /// Constructs a new `WaylandClipboardContext` that operates on all
+    /// seats using the data-control clipboard protocol.
     ///
-    /// Attempts to get the current contents of the primary selection,
-    /// returning `Err` if the contents of the clipboard could not be
-    /// fetched. An empty clipboard is not considered an error, nor is
-    /// the Wayland environment not supporting the primary selection
-    /// protocol.
+    /// Attempts to detect whether the primary selection is supported.
+    /// In addition to returning Err on communication errors (such as
+    /// when operating in an X11 environment), will also return Err if
+    /// there are no seats or the compositor does not support the
+    /// data-control protocol.
     fn new() -> Result<WaylandClipboardContext, Box<dyn Error>> {
-        if let Err(e) = paste::get_contents(
-            ClipboardType::Primary,
-            paste::Seat::Unspecified,
-            paste::MimeType::Any,
-        ) {
-            match e {
-                paste::Error::NoSeats
-                | paste::Error::ClipboardEmpty
-                | paste::Error::NoMimeType => {
-                    Ok(WaylandClipboardContext {
-                        supports_primary_selection: true,
-                    })
-                }
-                paste::Error::PrimarySelectionUnsupported => Ok(WaylandClipboardContext {
-                    supports_primary_selection: false,
-                }),
-                _ => Err(Box::new(e.compat())),
-            }
-        } else {
-            Ok(WaylandClipboardContext {
-                supports_primary_selection: true,
-            })
-        }
+        let supports_primary_selection =
+            utils::is_primary_selection_supported().map_err(into_boxed_error)?;
+
+        Ok(WaylandClipboardContext {
+            inner: Inner::Cli {
+                supports_primary_selection,
+            },
+        })
     }
 
     /// Pastes from the Wayland clipboard.
@@ -93,9 +98,83 @@ impl ClipboardProvider for WaylandClipboardContext {
     /// clipboard must indicate a text MIME type and the contained text
     /// must be valid UTF-8.
     fn get_contents(&mut self) -> Result<String, Box<dyn Error>> {
-        if self.supports_primary_selection {
+        self.inner.paste()
+    }
+
+    /// Copies to the Wayland clipboard.
+    ///
+    /// If the Wayland environment supported the primary selection when
+    /// this context was constructed, this will copy to both the
+    /// primary selection and the regular clipboard. Otherwise, only
+    /// the regular clipboard will be pasted to.
+    fn set_contents(&mut self, data: String) -> Result<(), Box<dyn Error>> {
+        self.inner.copy(data)
+    }
+}
+
+enum Inner {
+    WithSeat {
+        clipboard: WaylandClipboard,
+        seat_name: String,
+    },
+    Cli {
+        supports_primary_selection: bool,
+    },
+}
+
+impl Inner {
+    fn copy(&mut self, data: String) -> Result<(), Box<dyn Error>> {
+        match self {
+            Inner::WithSeat {
+                clipboard,
+                seat_name,
+            } => {
+                clipboard.store(seat_name.clone(), data);
+
+                Ok(())
+            }
+            Inner::Cli {
+                supports_primary_selection,
+            } => Inner::do_cli_copy(*supports_primary_selection, data),
+        }
+    }
+
+    fn paste(&mut self) -> Result<String, Box<dyn Error>> {
+        match self {
+            Inner::WithSeat {
+                clipboard,
+                seat_name,
+            } => Ok(clipboard.load(seat_name.clone())),
+            Inner::Cli {
+                supports_primary_selection,
+            } => Inner::do_cli_paste(*supports_primary_selection),
+        }
+    }
+
+    fn do_cli_copy(supports_primary_selection: bool, data: String) -> Result<(), Box<dyn Error>> {
+        let mut options = Options::new();
+
+        options
+            .seat(copy::Seat::All)
+            .trim_newline(false)
+            .foreground(false)
+            .serve_requests(ServeRequests::Unlimited);
+
+        if supports_primary_selection {
+            options.clipboard(copy::ClipboardType::Both);
+        } else {
+            options.clipboard(copy::ClipboardType::Regular);
+        }
+
+        options
+            .copy(copy::Source::Bytes(data.as_bytes()), copy::MimeType::Text)
+            .map_err(into_boxed_error)
+    }
+
+    fn do_cli_paste(supports_primary_selection: bool) -> Result<String, Box<dyn Error>> {
+        if supports_primary_selection {
             match paste::get_contents(
-                ClipboardType::Primary,
+                paste::ClipboardType::Primary,
                 paste::Seat::Unspecified,
                 paste::MimeType::Text,
             ) {
@@ -109,53 +188,25 @@ impl ClipboardProvider for WaylandClipboardContext {
                     | paste::Error::ClipboardEmpty
                     | paste::Error::NoMimeType => return Ok("".to_string()),
                     _ => (),
-                }
+                },
             }
         }
 
         let mut reader = match paste::get_contents(
-            ClipboardType::Regular,
+            paste::ClipboardType::Regular,
             paste::Seat::Unspecified,
             paste::MimeType::Text,
         ) {
             Ok((reader, _)) => reader,
             Err(e) => match e {
-                paste::Error::NoSeats
-                | paste::Error::ClipboardEmpty
-                | paste::Error::NoMimeType => return Ok("".to_string()),
+                paste::Error::NoSeats | paste::Error::ClipboardEmpty | paste::Error::NoMimeType => {
+                    return Ok("".to_string());
+                }
                 _ => return Err(into_boxed_error(e)),
-            }
+            },
         };
 
         Ok(read_into_string(&mut reader).map_err(Box::new)?)
-    }
-
-    /// Copies to the Wayland clipboard.
-    ///
-    /// If the Wayland environment supported the primary selection when
-    /// this context was constructed, this will copy to both the
-    /// primary selection and the regular clipboard. Otherwise, only
-    /// the regular clipboard will be pasted to.
-    fn set_contents(&mut self, data: String) -> Result<(), Box<dyn Error>> {
-        let mut options = Options::new();
-
-        options
-            .seat(copy::Seat::All)
-            .trim_newline(false)
-            .foreground(false)
-            .serve_requests(ServeRequests::Unlimited);
-
-        if self.supports_primary_selection {
-            options
-                .clipboard(ClipboardType::Primary)
-                .copy(copy::Source::Bytes(data.as_bytes()), copy::MimeType::Text)
-                .map_err(into_boxed_error)?;
-        }
-
-        options
-            .clipboard(ClipboardType::Regular)
-            .copy(copy::Source::Bytes(data.as_bytes()), copy::MimeType::Text)
-            .map_err(into_boxed_error)
     }
 }
 

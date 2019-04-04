@@ -23,6 +23,12 @@ limitations under the License.
 extern crate failure;
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+extern crate smithay_clipboard;
+
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+extern crate wayland_client;
+
+#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 extern crate wl_clipboard_rs;
 
 #[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
