@@ -18,6 +18,6 @@ objc-foundation = "0.1"
 [target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))'.dependencies]
 failure = "0.1"
 smithay-clipboard = "0.1"
-wayland-client = "*"
+wayland-client = "0.22"
 wl-clipboard-rs = "0.3"
 x11-clipboard = "0.3"
