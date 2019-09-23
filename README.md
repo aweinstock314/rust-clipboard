@@ -10,10 +10,10 @@ It is used in Mozilla Servo.
 
 ## Prerequisites
 
-On Linux you need the x11 library, install it with something like:
+On Linux you'll need the `xcb`, `xcb-render`, `xcb-shape`, and `xcb-xfixes` X11 libraries at compile time. On Ubuntu, you can install these with
 
 ```bash
-sudo apt-get install xorg-dev
+sudo apt-get install libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
 ```
 
 ## Example
