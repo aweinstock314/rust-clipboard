@@ -1,15 +1,30 @@
+---
 language: rust
 
 os:
-- linux
-- osx
+  - linux
+  - osx
 
-# TODO: figure out how to get headless X11 working
-script: |
-  #!/bin/bash
-  cargo build --verbose
-  if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
-    cargo build --tests --verbose
-  else
-    cargo test --verbose
-  fi
+rust:
+  - stable
+  - beta
+  - nightly
+
+services:
+  - xvfb                      # Fake X11
+
+addons:
+  apt:
+    packages:
+      - libxcb-shape0-dev     # Because we use X11
+      - libxcb-xfixes0-dev    # Because we use X11
+
+cache: cargo
+matrix:
+  allow_failures:
+    - rust: nightly
+
+script:
+  - cargo clean
+  - cargo build
+  - cargo test
