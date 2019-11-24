@@ -51,7 +51,9 @@ pub struct WaylandClipboardContext {
 
 impl WaylandClipboardContext {
     /// Constructs a `WaylandClipboardContext` that operates on the
-    /// given seat using the regular Wayland clipboard protocol.
+    /// given seat using the regular Wayland clipboard protocol. This is
+    /// appropriate for GUI applications that create windows bound to a
+    /// Wayland display.
     ///
     /// Returns Err if unable to connect to a Wayland server.
     pub fn with_seat(seat_name: String) -> Result<WaylandClipboardContext, Box<dyn Error>> {
@@ -68,16 +70,24 @@ impl WaylandClipboardContext {
 
 impl ClipboardProvider for WaylandClipboardContext {
     /// Constructs a new `WaylandClipboardContext` that operates on all
-    /// seats using the data-control clipboard protocol.
+    /// seats using the data-control clipboard protocol.  This is
+    /// intended for CLI applications that do not create Wayland
+    /// windows.
     ///
     /// Attempts to detect whether the primary selection is supported.
+    /// Assumes no primary selection support if no seats are available.
     /// In addition to returning Err on communication errors (such as
     /// when operating in an X11 environment), will also return Err if
-    /// there are no seats or the compositor does not support the
-    /// data-control protocol.
+    /// the compositor does not support the data-control protocol.
     fn new() -> Result<WaylandClipboardContext, Box<dyn Error>> {
         let supports_primary_selection =
-            utils::is_primary_selection_supported().map_err(into_boxed_error)?;
+            match utils::is_primary_selection_supported() {
+                Ok(v) => v,
+                Err(e) => match e {
+                    utils::PrimarySelectionCheckError::NoSeats => false,
+                    _ => return Err(into_boxed_error(e)),
+                },
+            };
 
         Ok(WaylandClipboardContext {
             inner: Inner::Cli {
