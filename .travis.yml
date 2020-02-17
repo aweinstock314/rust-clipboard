@@ -7,6 +7,10 @@ os:
 # TODO: figure out how to get headless X11 working
 script: |
   #!/bin/bash
+  if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
+    apt-get update
+    apt-get install -y --no-install-recommends xorg-dev python3 libx11-xcb-dev libgl1-mesa-dev
+  fi
   cargo build --verbose
   if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     cargo build --tests --verbose
