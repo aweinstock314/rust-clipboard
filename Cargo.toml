@@ -7,13 +7,20 @@ repository = "https://github.com/aweinstock314/rust-clipboard"
 license = "MIT / Apache-2.0"
 keywords = ["clipboard"]
 
+[features]
+default = ["macos", "windows", "x11"]
+
+macos = ["objc", "objc_id", "objc-foundation"]
+windows = ["clipboard-win"]
+x11 = ["x11-clipboard"]
+
 [target.'cfg(windows)'.dependencies]
-clipboard-win = "2.1"
+clipboard-win = { version = "2.1", optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc = "0.2"
-objc_id = "0.1"
-objc-foundation = "0.1"
+objc = { version = "0.2", optional = true }
+objc_id = { version = "0.1", optional = true }
+objc-foundation = { version = "0.1", optional = true }
 
 [target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))'.dependencies]
-x11-clipboard = "0.3"
+x11-clipboard = { version = "0.3", optional = true }

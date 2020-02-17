@@ -19,43 +19,43 @@ limitations under the License.
 #![crate_type = "dylib"]
 #![crate_type = "rlib"]
 
-#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+#[cfg(all(unix, feature = "x11", not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 extern crate x11_clipboard as x11_clipboard_crate;
 
-#[cfg(windows)]
+#[cfg(all(windows, feature = "windows"))]
 extern crate clipboard_win;
 
-#[cfg(target_os="macos")]
+#[cfg(all(target_os="macos", feature = "macos"))]
 #[macro_use]
 extern crate objc;
-#[cfg(target_os="macos")]
+#[cfg(all(target_os="macos", feature = "macos"))]
 extern crate objc_id;
-#[cfg(target_os="macos")]
+#[cfg(all(target_os="macos", feature = "macos"))]
 extern crate objc_foundation;
 
 mod common;
 pub use common::ClipboardProvider;
 
-#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+#[cfg(all(unix, feature = "x11", not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 pub mod x11_clipboard;
 
-#[cfg(windows)]
+#[cfg(all(windows, feature = "windows"))]
 pub mod windows_clipboard;
 
-#[cfg(target_os="macos")]
+#[cfg(all(target_os="macos", feature = "macos"))]
 pub mod osx_clipboard;
 
 pub mod nop_clipboard;
 
-#[cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
+#[cfg(all(unix, feature = "x11", not(any(target_os="macos", target_os="android", target_os="emscripten"))))]
 pub type ClipboardContext = x11_clipboard::X11ClipboardContext;
-#[cfg(windows)]
+#[cfg(all(windows, feature = "windows"))]
 pub type ClipboardContext = windows_clipboard::WindowsClipboardContext;
-#[cfg(target_os="macos")]
+#[cfg(all(target_os="macos", feature = "macos"))]
 pub type ClipboardContext = osx_clipboard::OSXClipboardContext;
 #[cfg(target_os="android")]
 pub type ClipboardContext = nop_clipboard::NopClipboardContext; // TODO: implement AndroidClipboardContext (see #52)
-#[cfg(not(any(unix, windows, target_os="macos", target_os="android", target_os="emscripten")))]
+#[cfg(not(any(all(unix, feature = "x11", not(any(target_os="macos", target_os="android", target_os="emscripten"))), all(windows, feature = "windows"), all(target_os="macos", feature = "macos"), target_os="android")))]
 pub type ClipboardContext = nop_clipboard::NopClipboardContext;
 
 #[test]
