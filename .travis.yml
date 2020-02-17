@@ -4,6 +4,15 @@ os:
 - linux
 - osx
 
+addons:
+  apt:
+    update: true
+    packages:
+    - xorg-dev
+    - python3
+    - libx11-xcb-dev
+    - libgl1-mesa-dev
+
 # TODO: figure out how to get headless X11 working
 script: |
   #!/bin/bash
