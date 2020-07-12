@@ -15,12 +15,13 @@ limitations under the License.
 */
 
 use common::*;
-use std::error::Error;
 use std::marker::PhantomData;
 use std::time::Duration;
 use x11_clipboard_crate::xcb::xproto::Atom;
 use x11_clipboard_crate::Atoms;
 use x11_clipboard_crate::Clipboard as X11Clipboard;
+
+use crate::Result;
 
 pub trait Selection {
     fn atom(atoms: &Atoms) -> Atom;
@@ -50,11 +51,11 @@ impl<S> ClipboardProvider for X11ClipboardContext<S>
 where
     S: Selection,
 {
-    fn new() -> Result<X11ClipboardContext<S>, Box<dyn Error>> {
+    fn new() -> Result<X11ClipboardContext<S>> {
         Ok(X11ClipboardContext(X11Clipboard::new()?, PhantomData))
     }
 
-    fn get_contents(&mut self) -> Result<String, Box<dyn Error>> {
+    fn get_contents(&mut self) -> Result<String> {
         Ok(String::from_utf8(self.0.load(
             S::atom(&self.0.getter.atoms),
             self.0.getter.atoms.utf8_string,
@@ -63,7 +64,7 @@ where
         )?)?)
     }
 
-    fn set_contents(&mut self, data: String) -> Result<(), Box<dyn Error>> {
+    fn set_contents(&mut self, data: String) -> Result<()> {
         Ok(self.0.store(
             S::atom(&self.0.setter.atoms),
             self.0.setter.atoms.utf8_string,

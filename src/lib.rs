@@ -39,6 +39,8 @@ extern crate objc_id;
 mod common;
 pub use common::ClipboardProvider;
 
+pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync + 'static>>;
+
 #[cfg(all(
     unix,
     not(any(target_os = "macos", target_os = "android", target_os = "emscripten"))
