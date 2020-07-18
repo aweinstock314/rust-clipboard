@@ -123,3 +123,23 @@ impl From<FromUtf8Error> for ClipboardError {
         ClipboardError::EncodingError(e)
     }
 }
+
+impl Error for ClipboardError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        use self::ClipboardError::*;
+        match self {
+            Unimplemented => None,
+            IoError(ref error) => Some(error),
+            EncodingError(ref error) => Some(error),
+
+            #[cfg(any(target_os = "linux", target_os = "openbsd"))]
+            X11ClipboardError(ref error) => Some(error),
+
+            #[cfg(target_os = "macos")]
+            MacOsClipboardError(ref error) => Some(error),
+
+            #[cfg(target_os = "windows")]
+            WindowsClipboardError(ref error) => Some(error),
+        }
+    }
+}
