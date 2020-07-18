@@ -1,6 +1,7 @@
 use std::time::Duration;
 use x11_clipboard::Clipboard as SystemClipboard;
-use {clipboard_metadata::ClipboardContentType, errors::ClipboardError, Clipboard};
+
+use crate::{clipboard_metadata::ClipboardContentType, errors::ClipboardError, Clipboard};
 
 pub struct X11Clipboard {
     inner: SystemClipboard,
@@ -17,7 +18,7 @@ impl Clipboard for X11Clipboard {
 
     /// # **WARNING**: Unimplemented, use `get_string_contents`
     fn get_contents(&self) -> Result<(Vec<u8>, ClipboardContentType), ClipboardError> {
-        Err(ClipboardError::Unimplemented)
+        todo!("Unimplemented, use `get_string_contents`");
     }
 
     fn get_string_contents(&self) -> Result<String, ClipboardError> {
@@ -35,7 +36,7 @@ impl Clipboard for X11Clipboard {
         _contents: Vec<u8>,
         _: ClipboardContentType,
     ) -> Result<(), ClipboardError> {
-        Err(ClipboardError::Unimplemented)
+        todo!("Unimplemented, use `set_string_contents`");
     }
 
     fn set_string_contents(&self, contents: String) -> Result<(), ClipboardError> {

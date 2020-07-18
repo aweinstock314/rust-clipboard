@@ -2,7 +2,8 @@ use objc::runtime::{Class, Object};
 use objc_foundation::{INSArray, INSObject, INSString, NSArray, NSDictionary, NSObject, NSString};
 use objc_id::{Id, Owned};
 use std::mem::transmute;
-use {
+
+use crate::{
     clipboard_metadata::ClipboardContentType,
     errors::{ClipboardError, MacOsError},
     Clipboard,
@@ -26,14 +27,12 @@ impl Clipboard for MacOsClipboard {
             return Err(MacOsError::NullPasteboard.into());
         }
         let pasteboard: Id<Object> = unsafe { Id::from_ptr(pasteboard) };
-        Ok(MacOsClipboard {
-            pasteboard: pasteboard,
-        })
+        Ok(MacOsClipboard { pasteboard })
     }
 
     /// # **WARNING**: Unimplemented, use `get_string_contents`
     fn get_contents(&self) -> Result<(Vec<u8>, ClipboardContentType), ClipboardError> {
-        Err(ClipboardError::Unimplemented)
+        todo!("Unimplemented, use `get_string_contents`");
     }
 
     fn get_string_contents(&self) -> Result<String, ClipboardError> {
@@ -64,21 +63,21 @@ impl Clipboard for MacOsClipboard {
     /// # **WARNING**: Unimplemented, use `get_string_contents`
     fn set_contents(
         &self,
-        contents: Vec<u8>,
-        _: ClipboardContentType,
+        _contents: Vec<u8>,
+        _type: ClipboardContentType,
     ) -> Result<(), ClipboardError> {
-        Err(ClipboardError::Unimplemented)
+        todo!("Unimplemented, use `set_string_contents`");
     }
 
     fn set_string_contents(&self, contents: String) -> Result<(), ClipboardError> {
         let string_array = NSArray::from_vec(vec![NSString::from_str(&contents)]);
         let _: usize = unsafe { msg_send![self.pasteboard, clearContents] };
         let success: bool = unsafe { msg_send![self.pasteboard, writeObjects: string_array] };
-        return if success {
+        if success {
             Ok(())
         } else {
             Err(MacOsError::PasteWriteObjectsError.into())
-        };
+        }
     }
 }
 

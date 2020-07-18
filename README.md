@@ -1,13 +1,13 @@
 # Crossclip
 
-Crossclip is a cross-platform library for getting and setting the contents of
-the OS-level clipboard. It has been tested on GNU/Linux, FreeBSD, Windows and Mac OSX.
+[![Travis Build Status](https://travis-ci.org/mcobzarenco/crossclip.svg?branch=master)](https://travis-ci.org/mcobzarenco/crossclip)
+[![](https://img.shields.io/crates/v/crossclip.svg)](https://crates.io/crates/crossclip)
+[![](https://docs.rs/crossclip/badge.svg)](https://docs.rs/crossclip)
+
+Crossclip is a cross-platform Rust library for interfacing with the system
+clipboard. It has been tested on GNU/Linux, FreeBSD, Windows and Mac OSX.
 
 The library is a fork of [clipboard2](), itself a fork of [rust-clipboard](https://github.com/aweinstock314/rust-clipboard)
-
-[![](http://meritbadge.herokuapp.com/clipboard)](https://crates.io/crates/clipboard)
-[![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/aweinstock314/rust-clipboard)](https://ci.appveyor.com/project/aweinstock314/rust-clipboard)
-[![Travis Build Status](https://travis-ci.org/aweinstock314/rust-clipboard.svg?branch=master)](https://travis-ci.org/aweinstock314/rust-clipboard)
 
 ## Prerequisites
 
@@ -29,7 +29,7 @@ fn main() -> Result<()> {
 }
 ```
 
-# License
+## License
 
 This project is licensed under either of
 

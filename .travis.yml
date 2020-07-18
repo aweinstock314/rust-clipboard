@@ -1,15 +1,50 @@
 language: rust
 
-os:
-- linux
-- osx
+addons:
+  apt:
+    packages:
+    - libxcb-xfixes0-dev
 
-# TODO: figure out how to get headless X11 working
-script: |
-  #!/bin/bash
-  cargo build --verbose
-  if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
-    cargo build --tests --verbose
-  else
-    cargo test --verbose
-  fi
+services:
+  - xvfb
+
+git:
+  depth: 1
+
+os:
+  - linux
+  - osx
+
+rust:
+  - 1.45.0
+  - stable
+
+matrix:
+  fast_finish: true
+  include:
+    - if: tag IS present
+      os: linux
+      rust: stable
+      env: ARCH=i386
+    - name: "Clippy Linux"
+      os: linux
+      env: CLIPPY=true
+      rust: stable
+    - name: "Clippy OSX"
+      os: osx
+      env: CLIPPY=true
+      rust: stable
+    - name: "Clippy Windows"
+      os: windows
+      env: CLIPPY=true
+      rust: stable-x86_64-pc-windows-msvc
+    - name: "Rustfmt"
+      os: linux
+      env: RUSTFMT=true
+      rust: stable
+    - name: "Windows Stable"
+      os: windows
+      rust: stable-x86_64-pc-windows-msvc
+
+install: scripts/install
+script: scripts/test

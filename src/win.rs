@@ -1,10 +1,10 @@
-use {
+use clipboard_win::{raw::is_format_avail, Clipboard as SystemClipboard};
+
+use crate::{
     clipboard_metadata::{ClipboardContentType, WinContentType},
     errors::{ClipboardError, WinError},
     Clipboard,
 };
-
-use clipboard_win::{raw::is_format_avail, Clipboard as SystemClipboard};
 
 pub struct WindowsClipboard {}
 
@@ -47,9 +47,7 @@ impl Clipboard for WindowsClipboard {
         contents: Vec<u8>,
         format: ClipboardContentType,
     ) -> Result<(), ClipboardError> {
-        let win_content_type = match format {
-            ClipboardContentType::WinContentType(w) => w,
-        };
+        let ClipboardContentType::WinContentType(win_content_type) = format;
         SystemClipboard::new()?
             .set(win_content_type.into(), &contents)
             .map_err(|e| e.into())

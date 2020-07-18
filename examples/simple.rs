@@ -1,11 +1,11 @@
-extern crate clipboard2;
+use crossclip::{Clipboard, ClipboardError, SystemClipboard};
 
-use clipboard2::{Clipboard, SystemClipboard};
-
-fn main() {
-    let clipboard = SystemClipboard::new().unwrap();
-    clipboard
-        .set_string_contents(String::from("Hello"))
-        .unwrap();
-    println!("{}", clipboard.get_string_contents().unwrap());
+fn main() -> Result<(), ClipboardError> {
+    let clipboard = SystemClipboard::new()?;
+    clipboard.set_string_contents(String::from("Hello, world!"))?;
+    println!(
+        "Cliboard contents set to `{}`",
+        clipboard.get_string_contents()?
+    );
+    Ok(())
 }

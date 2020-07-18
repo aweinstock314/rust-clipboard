@@ -30,6 +30,7 @@ pub enum WinError {
 #[cfg(target_os = "windows")]
 impl Display for WinError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        use self::WinError::*;
         write!(
             f,
             "{}",
@@ -135,8 +136,9 @@ impl Error for ClipboardError {
             #[cfg(any(target_os = "linux", target_os = "openbsd"))]
             X11ClipboardError(ref error) => Some(error),
 
+            // The trait `std::error::Error` is not implemented for `errors::MacOsError`.
             #[cfg(target_os = "macos")]
-            MacOsClipboardError(ref error) => Some(error),
+            MacOsClipboardError(_) => None,
 
             #[cfg(target_os = "windows")]
             WindowsClipboardError(ref error) => Some(error),
