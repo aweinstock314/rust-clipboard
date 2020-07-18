@@ -1,8 +1,8 @@
 # Crossclip
 
-[![Travis Build Status](https://travis-ci.org/mcobzarenco/crossclip.svg?branch=master)](https://travis-ci.org/mcobzarenco/crossclip)
-[![](https://img.shields.io/crates/v/crossclip.svg)](https://crates.io/crates/crossclip)
-[![](https://docs.rs/crossclip/badge.svg)](https://docs.rs/crossclip)
+[![Build Status](https://travis-ci.com/mcobzarenco/crossclip.svg?branch=master)](https://travis-ci.com/mcobzarenco/crossclip)
+[![Crates.io](https://img.shields.io/crates/v/crossclip.svg)](https://crates.io/crates/crossclip)
+[![Documentation](https://docs.rs/crossclip/badge.svg)](https://docs.rs/crossclip)
 
 Crossclip is a cross-platform Rust library for interfacing with the system
 clipboard. It has been tested on GNU/Linux, FreeBSD, Windows and Mac OSX.
