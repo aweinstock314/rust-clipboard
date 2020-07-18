@@ -37,7 +37,9 @@ impl Clipboard for WindowsClipboard {
     }
 
     fn get_string_contents(&self) -> Result<String, ClipboardError> {
-        SystemClipboard::new()?.get_string().map_err(|e| e.into())
+        let mut contents = String::new();
+        SystemClipboard::new()?.get_string(&mut contents)?;
+        Ok(contents)
     }
 
     fn set_contents(
