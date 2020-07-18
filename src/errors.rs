@@ -1,18 +1,18 @@
 use std::fmt::{self, Display, Formatter};
 
-#[cfg(any(target_os="linux", target_os="openbsd"))]
+#[cfg(any(target_os = "linux", target_os = "openbsd"))]
 use x11_clipboard::error::Error as X11Error;
 
-use std::string::FromUtf8Error;
 use std::error::Error;
 use std::io::Error as IoError;
+use std::string::FromUtf8Error;
 
 #[derive(Debug)]
 pub enum ClipboardError {
     Unimplemented,
     IoError(IoError),
     EncodingError(FromUtf8Error),
-    #[cfg(any(target_os = "linux", target_os="openbsd"))]
+    #[cfg(any(target_os = "linux", target_os = "openbsd"))]
     X11ClipboardError(X11Error),
     #[cfg(target_os = "macos")]
     MacOsClipboardError(MacOsError),
@@ -20,7 +20,7 @@ pub enum ClipboardError {
     WindowsClipboardError(WinError),
 }
 
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum WinError {
     EmptyClipboard,
@@ -40,7 +40,7 @@ impl Error for WinError {
         use self::WinError::*;
         match *self {
             EmptyClipboard => "Empty clipboard or couldn't determine format of clipboard contents",
-            FormatNoSize => "Could not determine the length of the clipboard contents"
+            FormatNoSize => "Could not determine the length of the clipboard contents",
         }
     }
 
@@ -55,21 +55,21 @@ impl From<IoError> for ClipboardError {
     }
 }
 
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 impl From<WinError> for ClipboardError {
     fn from(e: WinError) -> Self {
         ClipboardError::WindowsClipboardError(e)
     }
 }
 
-#[cfg(any(target_os="linux", target_os="openbsd"))]
+#[cfg(any(target_os = "linux", target_os = "openbsd"))]
 impl From<X11Error> for ClipboardError {
     fn from(e: X11Error) -> Self {
         ClipboardError::X11ClipboardError(e)
     }
 }
 
-#[cfg(target_os="macos")]
+#[cfg(target_os = "macos")]
 impl From<MacOsError> for ClipboardError {
     fn from(e: MacOsError) -> Self {
         ClipboardError::MacOsClipboardError(e)
