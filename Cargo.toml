@@ -1,19 +1,24 @@
 [package]
-name = "clipboard"
-version = "0.5.0"
-authors = ["Avi Weinstock <aweinstock314@gmail.com>"]
-description = "rust-clipboard is a cross-platform library for getting and setting the contents of the OS-level clipboard."
-repository = "https://github.com/aweinstock314/rust-clipboard"
-license = "MIT / Apache-2.0"
-keywords = ["clipboard"]
+name = "crossclip"
+version = "0.7.0"
+authors = [
+  "Avi Weinstock <aweinstock314@gmail.com>",
+  "Felix Schütt <felix.schuett@maps4print.com>",
+  "Marius Cobzarenco <marius.cobzarenco@gmail.com>",
+]
+homepage = "https://github.com/mcobzarenco/crossclip"
+description = "Crossclip is a cross-platform Rust library for interfacing with the system clipboard."
+keywords = ["clipboard", "cross-platform", "x11"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
 
 [target.'cfg(windows)'.dependencies]
-clipboard-win = "2.1"
+clipboard-win = "3.1.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc = "0.2"
-objc_id = "0.1"
-objc-foundation = "0.1"
+objc = "0.2.7"
+objc_id = "0.1.1"
+objc-foundation = "0.1.1"
 
-[target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))'.dependencies]
-x11-clipboard = "0.3"
+[target.'cfg(any(target_os = "linux", target_os = "openbsd"))'.dependencies]
+x11-clipboard = "0.5.1"
