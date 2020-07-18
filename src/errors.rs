@@ -30,21 +30,21 @@ pub enum WinError {
 #[cfg(target_os = "windows")]
 impl Display for WinError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
+        write!(
+            f,
+            "{}",
+            match *self {
+                EmptyClipboard =>
+                    "Empty clipboard or couldn't determine format of clipboard contents",
+                FormatNoSize => "Could not determine the length of the clipboard contents",
+            }
+        )
     }
 }
 
 #[cfg(target_os = "windows")]
 impl Error for WinError {
-    fn description(&self) -> &str {
-        use self::WinError::*;
-        match *self {
-            EmptyClipboard => "Empty clipboard or couldn't determine format of clipboard contents",
-            FormatNoSize => "Could not determine the length of the clipboard contents",
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
     }
 }
@@ -106,14 +106,14 @@ impl Display for ClipboardError {
         use self::ClipboardError::*;
         match self {
             Unimplemented => write!(f, "Clipboard::Unimplemented: Attempted to get or set the clipboard, which hasn't been implemented yet."),
-            IoError(ref e) => write!(f, "Clipboard::IoError: {} cause: {:?}", e.description(), e.cause()),
-            EncodingError(ref e) => write!(f, "Clipboard::EncodingError: {} cause: {:?}", e.description(), e.cause()),
+            IoError(ref e) => write!(f, "Clipboard::IoError: {} cause: {:?}", e, e.source()),
+            EncodingError(ref e) => write!(f, "Clipboard::EncodingError: {} cause: {:?}", e, e.source()),
             #[cfg(any(target_os="linux", target_os="openbsd"))]
             X11ClipboardError(ref e) => write!(f, "X11ClipboardError: {}", e),
             #[cfg(target_os="macos")]
             MacOsClipboardError(ref e) => write!(f, "MacOsClipboardError: {}", e),
             #[cfg(target_os="windows")]
-            WindowsClipboardError(ref e) => write!(f, "WindowsClipboardError: {} cause: {:?}", e.description(), e.cause()),
+            WindowsClipboardError(ref e) => write!(f, "WindowsClipboardError: {} cause: {:?}", e, e.source()),
         }
     }
 }
