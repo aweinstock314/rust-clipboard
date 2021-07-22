@@ -28,10 +28,12 @@ extern crate clipboard_win;
 #[cfg(target_os="macos")]
 #[macro_use]
 extern crate objc;
-#[cfg(target_os="macos")]
-extern crate objc_id;
-#[cfg(target_os="macos")]
+#[cfg(target_os = "macos")]
+extern crate libc;
+#[cfg(target_os = "macos")]
 extern crate objc_foundation;
+#[cfg(target_os = "macos")]
+extern crate objc_id;
 
 mod common;
 pub use common::ClipboardProvider;
