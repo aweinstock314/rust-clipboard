@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-use common::ClipboardProvider;
+use crate::common::ClipboardProvider;
 use std::error::Error;
 
 pub struct NopClipboardContext;
