@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-use common::*;
-use objc::runtime::{Object, Class};
-use objc_foundation::{INSArray, INSString, INSObject};
-use objc_foundation::{NSArray, NSDictionary, NSString, NSObject};
+use crate::common::*;
+use objc::runtime::{Class, Object};
+use objc_foundation::{INSArray, INSObject, INSString};
+use objc_foundation::{NSArray, NSDictionary, NSObject, NSString};
 use objc_id::{Id, Owned};
 use std::error::Error;
 use std::mem::transmute;
@@ -31,16 +31,16 @@ pub struct OSXClipboardContext {
 extern "C" {}
 
 impl ClipboardProvider for OSXClipboardContext {
-    fn new() -> Result<OSXClipboardContext, Box<Error>> {
-        let cls = try!(Class::get("NSPasteboard").ok_or(err("Class::get(\"NSPasteboard\")")));
+    fn new() -> Result<OSXClipboardContext, Box<dyn Error>> {
+        let cls = Class::get("NSPasteboard").ok_or_else(|| err("Class::get(\"NSPasteboard\")"))?;
         let pasteboard: *mut Object = unsafe { msg_send![cls, generalPasteboard] };
         if pasteboard.is_null() {
             return Err(err("NSPasteboard#generalPasteboard returned null"));
         }
         let pasteboard: Id<Object> = unsafe { Id::from_ptr(pasteboard) };
-        Ok(OSXClipboardContext { pasteboard: pasteboard })
+        Ok(OSXClipboardContext { pasteboard })
     }
-    fn get_contents(&mut self) -> Result<String, Box<Error>> {
+    fn get_contents(&mut self) -> Result<String, Box<dyn Error>> {
         let string_class: Id<NSObject> = {
             let cls: Id<Class> = unsafe { Id::from_ptr(class("NSString")) };
             unsafe { transmute(cls) }
@@ -51,20 +51,24 @@ impl ClipboardProvider for OSXClipboardContext {
             let obj: *mut NSArray<NSString> =
                 msg_send![self.pasteboard, readObjectsForClasses:&*classes options:&*options];
             if obj.is_null() {
-                return Err(err("pasteboard#readObjectsForClasses:options: returned null"));
+                return Err(err(
+                    "pasteboard#readObjectsForClasses:options: returned null",
+                ));
             }
             Id::from_ptr(obj)
         };
         if string_array.count() == 0 {
-            Err(err("pasteboard#readObjectsForClasses:options: returned empty"))
+            Err(err(
+                "pasteboard#readObjectsForClasses:options: returned empty",
+            ))
         } else {
             Ok(string_array[0].as_str().to_owned())
         }
     }
-    fn set_contents(&mut self, data: String) -> Result<(), Box<Error>> {
+    fn set_contents(&mut self, data: String) -> Result<(), Box<dyn Error>> {
         let string_array = NSArray::from_vec(vec![NSString::from_str(&data)]);
         let _: usize = unsafe { msg_send![self.pasteboard, clearContents] };
-        let success: bool = unsafe { msg_send![self.pasteboard, writeObjects:string_array] };
+        let success: bool = unsafe { msg_send![self.pasteboard, writeObjects: string_array] };
         return if success {
             Ok(())
         } else {
