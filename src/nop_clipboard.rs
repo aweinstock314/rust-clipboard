@@ -20,17 +20,21 @@ use std::error::Error;
 pub struct NopClipboardContext;
 
 impl ClipboardProvider for NopClipboardContext {
-    fn new() -> Result<NopClipboardContext, Box<Error>> {
+    fn new() -> Result<NopClipboardContext, Box<dyn Error>> {
         Ok(NopClipboardContext)
     }
-    fn get_contents(&mut self) -> Result<String, Box<Error>> {
-        println!("Attempting to get the contents of the clipboard, which hasn't yet been \
-                  implemented on this platform.");
+    fn get_contents(&mut self) -> Result<String, Box<dyn Error>> {
+        println!(
+            "Attempting to get the contents of the clipboard, which hasn't yet been \
+                  implemented on this platform."
+        );
         Ok("".to_string())
     }
-    fn set_contents(&mut self, _: String) -> Result<(), Box<Error>> {
-        println!("Attempting to set the contents of the clipboard, which hasn't yet been \
-                  implemented on this platform.");
+    fn set_contents(&mut self, _: String) -> Result<(), Box<dyn Error>> {
+        println!(
+            "Attempting to set the contents of the clipboard, which hasn't yet been \
+                  implemented on this platform."
+        );
         Ok(())
     }
 }

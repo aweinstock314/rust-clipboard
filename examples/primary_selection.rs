@@ -1,8 +1,7 @@
 extern crate clipboard;
 
-use clipboard::ClipboardProvider;
 #[cfg(target_os = "linux")]
-use clipboard::x11_clipboard::{X11ClipboardContext, Primary};
+use clipboard::x11_clipboard::{Primary, X11ClipboardContext};
 
 #[cfg(target_os = "linux")]
 fn main() {
