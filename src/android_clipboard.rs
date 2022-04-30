@@ -23,7 +23,8 @@ impl ClipboardProvider for AndroidClipboardContext {
                 "(Ljava/lang/String;)Ljava/lang/Object;",
                 &[cb],
             )?
-            .l()?;
+            .l()
+            .unwrap();
 
         let clip_data = env
             .call_method(
@@ -32,11 +33,29 @@ impl ClipboardProvider for AndroidClipboardContext {
                 "()Landroid/content/ClipData;",
                 &[],
             )?
+            .l()
+            .unwrap();
+
+        //return Ok(format!("{:?}", clip_data));
+
+        let item = env
+            .call_method(
+                clip_data,
+                "getItemAt",
+                "(I)Landroid/content/ClipData$Item;",
+                &[0i32.into()],
+            )?
+            .l()
+            .unwrap();
+
+        let char_seq = env
+            .call_method(item, "getText", "()Ljava/lang/CharSequence;", &[])?
             .l()?;
 
         let string = env
-            .call_method(clip_data, "toString", "()Ljava/lang/String;", &[])?
-            .l()?;
+            .call_method(char_seq, "toString", "()Ljava/lang/String;", &[])?
+            .l()
+            .unwrap();
 
         let jstring = JString::from(string.into_inner());
 
