@@ -1,19 +1,23 @@
 [package]
-name = "clipboard"
-version = "0.5.0"
 authors = ["Avi Weinstock <aweinstock314@gmail.com>"]
 description = "rust-clipboard is a cross-platform library for getting and setting the contents of the OS-level clipboard."
-repository = "https://github.com/aweinstock314/rust-clipboard"
-license = "MIT / Apache-2.0"
 keywords = ["clipboard"]
+license = "MIT / Apache-2.0"
+name = "clipboard"
+repository = "https://github.com/aweinstock314/rust-clipboard"
+version = "0.5.0"
 
 [target.'cfg(windows)'.dependencies]
 clipboard-win = "2.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2"
-objc_id = "0.1"
 objc-foundation = "0.1"
+objc_id = "0.1"
 
 [target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))'.dependencies]
 x11-clipboard = "0.3"
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.19"
+ndk-glue = {version = "0.6"}
