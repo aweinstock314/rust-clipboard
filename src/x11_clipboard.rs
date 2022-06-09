@@ -20,7 +20,7 @@ use std::marker::PhantomData;
 use common::*;
 use x11_clipboard_crate::Atoms;
 use x11_clipboard_crate::Clipboard as X11Clipboard;
-use x11_clipboard_crate::xcb::xproto::Atom;
+use x11_clipboard_crate::xcb::x::Atom;
 
 pub trait Selection {
     fn atom(atoms: &Atoms) -> Atom;
