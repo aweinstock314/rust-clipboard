@@ -16,4 +16,4 @@ objc_id = "0.1"
 objc-foundation = "0.1"
 
 [target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten"))))'.dependencies]
-x11-clipboard = "0.3"
+x11-clipboard = "0.6"
