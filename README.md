@@ -4,7 +4,7 @@ rust-clipboard is a cross-platform library for getting and setting the contents 
 It has been tested on Windows, Mac OSX, GNU/Linux, and FreeBSD.
 It is used in Mozilla Servo.
 
-[![](http://meritbadge.herokuapp.com/clipboard)](https://crates.io/crates/clipboard)
+[![crates.io](https://img.shields.io/crates/v/clipboard)](https://crates.io/crates/clipboard)
 [![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/aweinstock314/rust-clipboard)](https://ci.appveyor.com/project/aweinstock314/rust-clipboard)
 [![Travis Build Status](https://travis-ci.org/aweinstock314/rust-clipboard.svg?branch=master)](https://travis-ci.org/aweinstock314/rust-clipboard)
 
